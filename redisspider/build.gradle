@@ -1,0 +1,257 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.bugtags.library.plugin'
+
+boolean hasProperty = hasProperty('devMinSdk')
+int minSdk = hasProperty ? devMinSdk.toInteger() : 16
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '26.0.2'
+    useLibrary 'org.apache.http.legacy'
+
+    defaultConfig {
+        applicationId "me.peiwo.peiwo"
+        minSdkVersion minSdk
+        targetSdkVersion 23
+        versionCode 2930
+        versionName "2.9.3.0"
+        multiDexEnabled true
+        flavorDimensions "2930"
+        manifestPlaceholders = [UMENG_CHANNEL_VALUE: "dev", package_name: "me.peiwo.peiwo"]
+        vectorDrawables.useSupportLibrary = true
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86"
+        }
+    }
+
+    signingConfigs {
+        debug {
+            // No debug config
+        }
+
+        release {
+            storeFile file("peiwo.keystore")
+            storePassword "qqq123"
+            keyAlias "peiwo"
+            keyPassword "qqq123"
+        }
+
+        keep {
+            storeFile file("keep.keystore")
+            storePassword "keep2017"
+            keyAlias "keep"
+            keyPassword "keep2017"
+        }
+    }
+
+    productFlavors {
+        M360 {}
+        baidu {}
+        google {}
+        huawei {}
+        meizu {}
+        myapp {}
+        other {}
+        wdj {}
+        web {
+            manifestPlaceholders += [package_name: "keep.peiwo.peiwo"]
+            applicationId "keep.peiwo.peiwo"
+            }
+        xiaomi {}
+        taobao {}
+        lianxiang {}
+        marketing360 {}
+        d {}
+        vivo {}
+        oppo {}
+        jinli {}
+        smartisan {}
+        ltv {}
+        guangdiantong1 {}
+        guangdiantong2 {
+            manifestPlaceholders += [package_name: "keep.peiwo.peiwo"]
+            applicationId "keep.peiwo.peiwo"
+            }
+        guangdiantong3 {}
+        guangdiantong4 {}
+        guangdiantong5 {}
+
+        keep {
+            manifestPlaceholders += [package_name: "keep.peiwo.peiwo"]
+            applicationId "keep.peiwo.peiwo"
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            buildConfigField "String", "BUILD_MODE", "\"debug\""
+            zipAlignEnabled true
+        }
+
+        staging {
+            debuggable true
+            buildConfigField "boolean", "LOG_DEBUG", "true"
+            buildConfigField "String", "BUILD_MODE", "\"staging\""
+            zipAlignEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            debuggable false
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            buildConfigField "String", "BUILD_MODE", "\"release\""
+            minifyEnabled true
+            zipAlignEnabled true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release_keep {
+            debuggable false
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            buildConfigField "String", "BUILD_MODE", "\"release\""
+            minifyEnabled true
+            zipAlignEnabled true
+            signingConfig signingConfigs.keep
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    dexOptions {
+        preDexLibraries = false
+        javaMaxHeapSize "3g"
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+
+    productFlavors.all {
+        flavor -> flavor.manifestPlaceholders += [UMENG_CHANNEL_VALUE: name]
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    afterEvaluate {
+        tasks.matching {
+            it.name.startsWith('dex')
+        }.each { dx ->
+            if (dx.additionalParameters == null) {
+                dx.additionalParameters = []
+            }
+            dx.additionalParameters += '--multi-dex'
+            dx.additionalParameters += '--minimal-main-dex'
+            dx.additionalParameters += '--set-max-idx-number=48000'
+        }
+    }
+
+
+    lintOptions {
+        disable 'MissingTranslation'
+        disable 'InvalidPackage'
+        disable 'PrivateResource'
+        abortOnError false
+        quiet true
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+}
+
+afterEvaluate {
+    android.applicationVariants.each { variant ->
+        def bugtagsAppKey
+        def bugtagsAppSecret
+        if (variant.name.contains("release")) {
+            bugtagsAppKey = 'a5d2d63e4b418bae5f045570798ae36a'
+            bugtagsAppSecret = '7e1e87e57e35da77b8bb9d54cc0dff82'
+        } else {
+            bugtagsAppKey = '4784c694318ab88d7f4d3eb6a6b6b642'
+            bugtagsAppSecret = 'c5d4a0e7129df91137a594f680dfdce2'
+        }
+
+        variant.ext.bugtagsAppKey = bugtagsAppKey
+        variant.ext.bugtagsAppSecret = bugtagsAppSecret
+    }
+}
+
+bugtags {
+    trackingNetworkEnabled true
+    mappingUploadEnabled true
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile "com.android.support:appcompat-v7:$android_support_version"
+    compile "com.android.support:recyclerview-v7:$android_support_version"
+    compile "com.android.support:cardview-v7:$android_support_version"
+    compile "com.android.support:percent:$android_support_version"
+    compile "com.android.support:design:$android_support_version"
+    compile "com.android.support:support-dynamic-animation:$android_support_version"
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.anko:anko-sdk15:$anko_version"
+    compile "org.jetbrains.anko:anko-support-v4:$anko_version"
+    compile "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
+    compile "org.jetbrains.anko:anko-recyclerview-v7:$anko_version"
+    compile "org.jetbrains.anko:anko-design:$anko_version"
+
+    compile(name: 'alisdk-feedback-2.5.2', ext: 'aar')
+    compile(name: 'securityguardaar3-5.1.96', ext: 'aar')
+    compile 'com.bugtags.library:bugtags-lib:latest.integration'
+    compile 'com.squareup.okio:okio:1.8.0'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.8.1'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+    compile 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
+    compile 'com.jakewharton:butterknife:8.8.1'
+    compile 'com.jakewharton.timber:timber:4.5.1'
+    compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+    compile 'com.jakewharton.rxbinding2:rxbinding-support-v4:2.0.0'
+    compile 'com.qiniu:qiniu-android-sdk:7.2.0'
+    compile 'com.alibaba:fastjson:1.1.52.android'
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.16'
+    compile 'com.github.yalantis:ucrop:2.2.1'
+    compile 'com.ashokvarma.android:bottom-navigation-bar:1.4.1'
+    compile 'com.github.promeg:tinypinyin:1.0.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
+    compile 'jp.wasabeef:glide-transformations:2.0.1'
+    compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.3.0'
+    compile 'com.umeng.analytics:analytics:latest.integration'
+    compile 'com.yqritc:android-scalablevideoview:1.0.4'
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    compile 'com.afollestad.material-dialogs:core:0.9.4.5'
+    compile 'com.getkeepsafe.relinker:relinker:1.2.2'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    testCompile 'junit:junit:4.12'
+
+}
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}

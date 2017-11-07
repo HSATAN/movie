@@ -15,5 +15,17 @@ class RedisspiderItem(scrapy.Item):
 
 class MovieItem(scrapy.Item):
 
-    movie_name = scrapy.Field()
-    movie_url = scrapy.Field()
+    name = scrapy.Field()
+    url = scrapy.Field()
+    playwright = scrapy.Field()
+    director = scrapy.Field()
+    star = scrapy.Field()
+    type = scrapy.Field()
+    address = scrapy.Field()
+    language = scrapy.Field()
+    long = scrapy.Field()
+    douban_score = scrapy.Field()
+    intro = scrapy.Field()
+    tags = scrapy.Field()
+    source = scrapy.Field()
+    time = scrapy.Field()

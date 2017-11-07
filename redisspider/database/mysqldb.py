@@ -2,6 +2,7 @@
 
 import redisspider.config.mysql_config as config
 import pymysql
+import logging
 
 
 class MysqlDB(object):
@@ -20,7 +21,8 @@ class MysqlDB(object):
         try:
             cls.cursor.execute(operation)
             cls.commit()
-        except:
+        except Exception as e:
+            logging.error("insert error: %s" % e)
             cls.rollback()
             cls.commit()
 

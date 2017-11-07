@@ -14,6 +14,13 @@ class RedisspiderPipeline(object):
         print('starting--------------------------')
 
     def process_item(self, item, spider):
-        print(item['movie_name'])
-        MysqlDB.insert("insert into movie(url,name) VALUES ('%s', '%s')" % (item['movie_url'], item['movie_name']))
+        keys = ""
+        values = ""
+        for key, value in dict(item).items():
+            values += ",'%s'" % value
+            keys += ",%s" % key
+        values = values.strip(',')
+        keys = keys.strip(',')
+        print("insert into movie(%s) VALUES (%s)" % (keys, values))
+        MysqlDB.insert("insert into movie(%s) VALUES (%s)" % (keys, values))
         return item
