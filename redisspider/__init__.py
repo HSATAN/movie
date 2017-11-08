@@ -1,5 +1,6 @@
-# # -*- coding: utf-8 -*-
-import re, sys
+# -*- coding: utf-8 -*-
+import os
+import sys
 
 
 def format_channel(str):
@@ -9,7 +10,9 @@ def format_channel(str):
 if __name__ == "__main__":
     gradle_path = 'build.gradle'
 
-    channel_str = ['web', 'xiaomi', 'guangdiantong2']
+    #channel_str = ['web', 'xiaomi', 'guangdiantong2', 'marketing360', 'keep']
+    channel_str = sys.argv[2]
+    channel_str = channel_str.split('\n')
     file = open(gradle_path, mode='r')
     file1 = open("./build.gradle_bak", mode='w')
     iswrite = False
@@ -46,3 +49,4 @@ if __name__ == "__main__":
     file1.flush()
     file1.close()
     file.close()
+    os.system('cp ./build.gradle_bak new_gradle')
